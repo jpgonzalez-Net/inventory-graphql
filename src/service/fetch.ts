@@ -1,10 +1,11 @@
 import axios from 'axios'
-
-const REST_PORT: string = '8080'
-const BASE_URL: string = `http://localhost:${REST_PORT}`
+import BASE_URL from './BASE_URL'
 
 const fetchResponseByURL = (relativeURL: string) => {
-    return axios.get(`${BASE_URL}${relativeURL}`).then((res) => res.data)
+    return axios
+        .get(`${BASE_URL}${relativeURL}`)
+        .then((res) => res.data)
+        .catch((e) => console.log(e))
 }
 
 export const fetchAllItems = () => {
@@ -13,4 +14,8 @@ export const fetchAllItems = () => {
 
 export const fetchItemById = (id: number) => {
     return fetchResponseByURL(`/items/${id}`)
+}
+
+export const fetchAllLocations = () => {
+    return fetchResponseByURL('/locations')
 }

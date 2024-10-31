@@ -1,19 +1,27 @@
 import {
     GraphQLInt,
     GraphQLList,
+    GraphQLNonNull,
     GraphQLObjectType,
     GraphQLSchema,
     GraphQLString,
 } from 'graphql'
-import { fetchAllItems, fetchItemById } from './service/fetch'
+import {
+    fetchAllItems,
+    fetchAllLocations,
+    fetchItemById,
+} from './service/fetch'
+import LocationTsType from './assets/LocationTsType'
+import { createItem, createLocation } from './service/create'
+import ItemTsType from './assets/ItemTsType'
+import { removeItem } from './service/remove'
 
 const LocationType = new GraphQLObjectType({
     name: 'Location',
     description: 'Some location',
     fields: () => ({
-        id: {
+        locationId: {
             type: GraphQLInt,
-            resolve: (location) => location.locationId,
         },
         state: {
             type: GraphQLString,
@@ -31,9 +39,8 @@ const ItemType = new GraphQLObjectType({
     name: 'Item',
     description: 'Some item',
     fields: () => ({
-        id: {
+        itemId: {
             type: GraphQLInt,
-            resolve: (item) => item.itemId,
         },
         itemName: {
             type: GraphQLString,
@@ -41,9 +48,9 @@ const ItemType = new GraphQLObjectType({
         description: {
             type: GraphQLString,
         },
-        // location: {
-        //     type: LocationType,
-        // },
+        location: {
+            type: LocationType,
+        },
     }),
 })
 
@@ -55,17 +62,80 @@ const QueryType = new GraphQLObjectType({
             type: new GraphQLList(ItemType),
             resolve: fetchAllItems, // Fetch the index of people from the REST API,
         },
-        Item: {
+        item: {
             type: ItemType,
             args: {
-                id: { type: GraphQLInt },
+                itemId: { type: GraphQLInt },
             },
-            resolve: (root, args) => fetchItemById(args.id), // Fetch the person with ID `args.id`,
+            resolve: (_, args) => fetchItemById(args.itemId), // Fetch the person with ID `args.id`,
+        },
+        allLocations: {
+            type: new GraphQLList(LocationType),
+            resolve: fetchAllLocations,
+        },
+    }),
+})
+
+const MutationType = new GraphQLObjectType({
+    name: 'Mutation',
+    fields: () => ({
+        addLocation: {
+            type: LocationType,
+            args: {
+                locationId: { type: new GraphQLNonNull(GraphQLInt) },
+                state: { type: new GraphQLNonNull(GraphQLString) },
+                address: { type: GraphQLString },
+                phoneNumber: { type: GraphQLInt },
+            },
+            resolve: (_, args) => {
+                const location: LocationTsType = {
+                    locationId: args.locationId,
+                    state: args.state,
+                    address: args.address,
+                    phoneNumber: args.phoneNumber,
+                }
+
+                return createLocation(location)
+            },
+        },
+        addItem: {
+            type: ItemType,
+            args: {
+                itemId: { type: new GraphQLNonNull(GraphQLInt) },
+                itemName: { type: new GraphQLNonNull(GraphQLString) },
+                description: { type: GraphQLString },
+                locationId: { type: GraphQLInt },
+            },
+            resolve: (_, args) => {
+                const location: LocationTsType = {
+                    locationId: args.locationId | 1,
+                    state: '',
+                    address: null,
+                    phoneNumber: null,
+                }
+
+                const item: ItemTsType = {
+                    itemId: args.itemId,
+                    itemName: args.itemName,
+                    description: args.description,
+                    location: args.location ? location : null,
+                }
+
+                return createItem(item)
+            },
+        },
+        removeItem: {
+            type: ItemType,
+            args: {
+                itemId: { type: new GraphQLNonNull(GraphQLInt) },
+            },
+            resolve: (_, args) => removeItem(args.itemId),
         },
     }),
 })
 
 const schema = new GraphQLSchema({
     query: QueryType,
+    mutation: MutationType,
 })
 export default schema
