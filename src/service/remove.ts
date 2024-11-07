@@ -8,7 +8,7 @@ export const removeItem = (itemId: number) => {
         .catch((e) => {
             if (e.status === 404) {
                 throw new Error(
-                    `An item with id of ${itemId} could not be found.`
+                    `Item does not exist or has been removed already.`
                 )
             } else {
                 throw new Error('There was an error deleting your item.')

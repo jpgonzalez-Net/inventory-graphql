@@ -118,7 +118,7 @@ const MutationType = new GraphQLObjectType({
                     itemId: args.itemId,
                     itemName: args.itemName,
                     description: args.description,
-                    location: args.location ? location : null,
+                    location: args.locationId ? location : null,
                 }
 
                 return createItem(item)

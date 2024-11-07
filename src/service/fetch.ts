@@ -23,7 +23,7 @@ export const fetchAllItems = () => {
 export const fetchItemById = (id: number) => {
     return fetchResponseByURL(`/items/${id}`).catch((e) => {
         if (e.status === 404) {
-            throw new Error(`An item with id of ${id} could not be found.`)
+            throw new Error(`Item could not be found.`)
         } else {
             throw new Error('There was an error finding your item.')
         }
